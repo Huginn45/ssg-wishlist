@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SSG Holiday Wishlist Board</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Subtle Muted Holiday Top Trim -->
+  <div class="festive-top-trim" aria-hidden="true"></div>
+
+  <!-- Soft Snowfall Canvas -->
+  <canvas id="snow-canvas"></canvas>
+
+  <div class="app-container">
+    <!-- Top Utility Bar -->
+    <nav class="top-utility-bar">
+      <button type="button" class="sync-status-pill" id="btn-open-sync" title="Configure live shared database for all SSG phones">
+        <span class="status-dot" id="sync-status-dot"></span>
+        <span id="sync-status-text">Local Board (Click to Connect Cloud Sync)</span>
+      </button>
+
+      <div class="utility-actions">
+        <button type="button" class="util-btn" id="btn-share-board" title="Copy shareable link for SSG group chat">
+          🔗 Share Link
+        </button>
+        <button type="button" class="util-btn" id="btn-theme-cycle" title="Switch Board Backdrop">
+          🎨 Backdrop: <span id="current-theme-label">Forest Pine</span>
+        </button>
+        <button type="button" class="util-btn active" id="btn-toggle-snow" title="Toggle Snowfall">
+          ❄️ Snow
+        </button>
+        <button type="button" class="util-btn" id="btn-export-json" title="Backup or Import Wishlists">
+          💾 Backup
+        </button>
+        <button type="button" class="util-btn" onclick="window.print()" title="Print Wishlist Cards">
+          🖨️ Print
+        </button>
+      </div>
+    </nav>
+
+    <!-- Hero Header -->
+    <header class="hero-header">
+      <div class="org-badge" id="org-badge-text">SUPREME STUDENT GOVERNMENT</div>
+      <h1 class="hero-title" id="hero-title-text">SSG Holiday Wishlist Board</h1>
+      <p class="hero-subtitle" id="hero-subtitle-text">
+        Pin your wishes, share your Shopee/Lazada reference links &amp; sizing, and help your Secret Santa / Monito-Monita find the right gift.
+      </p>
+      <div class="hero-cta-row">
+        <button type="button" class="btn-primary" id="btn-add-wishlist">
+          📌 Pin My Wishlist
+        </button>
+        <button type="button" class="btn-secondary" id="btn-random-pick" title="Spotlight a random wishlist card">
+          🎲 Random Spotlight
+        </button>
+      </div>
+    </header>
+
+    <!-- Search & Filter Toolbar -->
+    <section class="controls-toolbar" aria-label="Search and filter wishlists">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input
+          type="search"
+          id="search-input"
+          placeholder="Search by name, codename, gift item, color, or committee..."
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="filter-group">
+        <select id="committee-filter" class="filter-select" aria-label="Filter by Committee">
+          <option value="ALL">All Committees / Positions</option>
+        </select>
+
+        <select id="sort-select" class="filter-select" aria-label="Sort Wishlists">
+          <option value="newest">Newest First</option>
+          <option value="name">Name (A–Z)</option>
+          <option value="codename">Codename (A–Z)</option>
+        </select>
+
+        <button type="button" class="mystery-toggle" id="btn-mystery-mode" title="Hide real names and show only Codenames">
+          🎭 <span id="mystery-mode-label">Codename Mode: OFF</span>
+        </button>
+
+        <span class="stats-summary" id="board-stats-count">0 Wishlists</span>
+      </div>
+    </section>
+
+    <!-- Corkboard Wishlist Cards Grid -->
+    <main class="wishlist-grid" id="wishlist-grid">
+      <!-- Populated dynamically by app.js -->
+    </main>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- MODAL 1: ORGANIZED 3-STEP "PIN MY WISHLIST" MODAL                      -->
+  <!-- ====================================================================== -->
+  <div class="modal-backdrop" id="wishlist-modal" role="dialog" aria-modal="true" aria-labelledby="modal-form-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="modal-form-title">📌 Pin Your Holiday Wishlist</h2>
+        <button type="button" class="modal-close-btn" id="btn-close-wishlist-modal" aria-label="Close">&times;</button>
+      </div>
+
+      <!-- 3-Step Navigation Bar -->
+      <div class="modal-stepper" role="tablist" aria-label="Wishlist Form Steps">
+        <button type="button" class="stepper-tab active" data-step="1">
+          <span class="step-num">1</span> Member Info
+        </button>
+        <button type="button" class="stepper-tab" data-step="2">
+          <span class="step-num">2</span> Wishlist Items
+        </button>
+        <button type="button" class="stepper-tab" data-step="3">
+          <span class="step-num">3</span> Sizes &amp; Note
+        </button>
+      </div>
+
+      <form id="wishlist-form" class="modal-body" novalidate>
+        <input type="hidden" id="card-id" />
+
+        <!-- STEP 1: MEMBER IDENTITY & STAMP -->
+        <div class="form-step-panel active" data-step-panel="1">
+          <div class="step-intro-text">
+            Start with your name, SSG committee, and an optional Monito-Monita codename.
+          </div>
+
+          <div class="form-group-card">
+            <div class="form-grid-2">
+              <div class="form-field">
+                <label for="member-name">Full Name / Nickname *</label>
+                <input type="text" id="member-name" required placeholder="e.g., Alyzza Reyes" />
+              </div>
+              <div class="form-field">
+                <label for="member-codename">Codename <span class="optional">(Optional)</span></label>
+                <input type="text" id="member-codename" placeholder="e.g., Matcha Reindeer" />
+              </div>
+            </div>
+
+            <div class="form-grid-2">
+              <div class="form-field">
+                <label for="member-committee">Committee / Position *</label>
+                <select id="member-committee" required></select>
+              </div>
+              <div class="form-field">
+                <label for="member-pin">4-Digit Edit PIN <span class="optional">(Optional)</span></label>
+                <input type="password" id="member-pin" maxlength="12" placeholder="e.g., 1225" />
+                <span class="form-hint">Used when you want to edit or remove your card later.</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group-card">
+            <div class="form-field">
+              <label>Card Corner Stamp</label>
+              <div class="stamp-picker" id="stamp-picker"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: WISHLIST ITEMS -->
+        <div class="form-step-panel" data-step-panel="2">
+          <div class="step-intro-text">
+            Add 1 to 5 gift ideas. You can paste Shopee/Lazada links or attach a photo screenshot.
+          </div>
+
+          <div id="wish-items-container" style="display:flex; flex-direction:column; gap:12px;">
+            <!-- Dynamic item cards injected here -->
+          </div>
+
+          <button type="button" class="add-wish-row-btn" id="btn-add-wish-row">
+            + Add Another Wishlist Item (Up to 5)
+          </button>
+        </div>
+
+        <!-- STEP 3: PREFERENCES, ALLERGIES & NOTE -->
+        <div class="form-step-panel" data-step-panel="3">
+          <div class="step-intro-text">
+            Help your Secret Santa get the right size, color, or snack without any guesswork.
+          </div>
+
+          <div class="form-group-card">
+            <div class="form-grid-2">
+              <div class="form-field">
+                <label for="pref-color">Favorite Color(s) <span class="optional">(Optional)</span></label>
+                <input type="text" id="pref-color" placeholder="e.g., Forest Green, Cream, Navy" />
+              </div>
+              <div class="form-field">
+                <label for="pref-size">Shirt / Apparel Size <span class="optional">(Optional)</span></label>
+                <input type="text" id="pref-size" placeholder="e.g., Unisex Medium / Large" />
+              </div>
+            </div>
+
+            <div class="form-field">
+              <label for="pref-dos">Likes / Do's <span class="optional">(Snacks, hobbies, small extras)</span></label>
+              <input type="text" id="pref-dos" placeholder="e.g., Iced coffee, gel pens, cute socks, canvas totes" />
+            </div>
+
+            <div class="form-field">
+              <label for="pref-donts">Allergies / Don'ts <span class="optional">(Things to avoid)</span></label>
+              <input type="text" id="pref-donts" placeholder="e.g., Allergic to peanuts, no strong perfumes" />
+            </div>
+          </div>
+
+          <div class="form-group-card">
+            <div class="form-field">
+              <label for="santa-note">Note to Your Secret Santa / Monito-Monita <span class="optional">(Optional)</span></label>
+              <textarea
+                id="santa-note"
+                rows="3"
+                placeholder="e.g., Merry Christmas! Anything from the heart will make my day."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+      </form>
+
+      <div class="modal-footer">
+        <div>
+          <button type="button" class="btn-modal-cancel" id="btn-prev-step" style="display:none;">
+            &larr; Back
+          </button>
+        </div>
+        <div class="modal-footer-right">
+          <button type="button" class="btn-modal-cancel" id="btn-cancel-wishlist">Cancel</button>
+          <button type="button" class="btn-modal-next" id="btn-next-step">Next: Wishlist Items &rarr;</button>
+          <button type="submit" form="wishlist-form" class="btn-modal-save" id="btn-save-wishlist" style="display:none;">
+            📌 Post Wishlist
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- MODAL 2: LIVE CLOUD SYNC & SHARED BACKEND SETUP                        -->
+  <!-- ====================================================================== -->
+  <div class="modal-backdrop" id="sync-modal" role="dialog" aria-modal="true" aria-labelledby="sync-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="sync-modal-title">☁️ Live Shared Backend Setup</h2>
+        <button type="button" class="modal-close-btn" id="btn-close-sync-modal" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:14px;">
+        <p style="font-size:0.88rem; line-height:1.5;">
+          Connect a free cloud database so every SSG member who opens your Vercel site on their phone sees real-time wishlists automatically.
+        </p>
+
+        <div class="form-field">
+          <label for="backend-url-input">Shared Database URL (Firebase RTDB or Google Apps Script URL)</label>
+          <input
+            type="url"
+            id="backend-url-input"
+            placeholder="https://your-project-default-rtdb.firebasedatabase.app  OR  https://script.google.com/macros/s/.../exec"
+          />
+          <span class="form-hint">
+            Tip: For permanent Vercel deployment, paste this URL into <code>BACKEND_URL</code> inside <code>config.js</code> before pushing to Vercel!
+          </span>
+        </div>
+
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" class="btn-modal-save" id="btn-save-sync-url">Connect &amp; Sync Now</button>
+          <button type="button" class="btn-modal-cancel" id="btn-copy-magic-link">🔗 Copy Shareable Group Chat Link</button>
+          <button type="button" class="btn-modal-cancel" id="btn-disconnect-sync">Disconnect</button>
+        </div>
+
+        <div class="sync-tabs" style="margin-top:4px;">
+          <button type="button" class="sync-tab-btn active" data-tab="firebase">Option A: Firebase Realtime DB (60 sec)</button>
+          <button type="button" class="sync-tab-btn" data-tab="gsheets">Option B: Google Sheets (90 sec)</button>
+        </div>
+
+        <div id="sync-guide-firebase" style="font-size:0.83rem; line-height:1.55; display:flex; flex-direction:column; gap:6px;">
+          <strong>How to create a free Firebase Realtime Database:</strong>
+          <ol style="padding-left:20px; display:flex; flex-direction:column; gap:4px;">
+            <li>Go to <a href="https://console.firebase.google.com/" target="_blank" rel="noopener" style="color:var(--berry-600);font-weight:700;">console.firebase.google.com</a> and click <strong>Create a project</strong>.</li>
+            <li>In the left sidebar, click <strong>Build &rarr; Realtime Database &rarr; Create Database</strong>.</li>
+            <li>Choose <strong>Start in test mode</strong> and click Enable.</li>
+            <li>Copy your database URL and paste it into <code>config.js</code> (<code>BACKEND_URL</code>) or above!</li>
+          </ol>
+        </div>
+
+        <div id="sync-guide-gsheets" style="font-size:0.83rem; line-height:1.55; display:none; flex-direction:column; gap:6px;">
+          <strong>How to use a Google Sheet as your database:</strong>
+          <ol style="padding-left:20px; display:flex; flex-direction:column; gap:4px;">
+            <li>Create a new Google Sheet (<a href="https://sheets.new" target="_blank" rel="noopener" style="color:var(--berry-600);font-weight:700;">sheets.new</a>) and click <strong>Extensions &rarr; Apps Script</strong>.</li>
+            <li>Copy the code from <code>google-sheets-backend.gs</code> and paste it into the editor, then save.</li>
+            <li>Click <strong>Deploy &rarr; New deployment &rarr; Web app</strong>. Set <em>Execute as: Me</em> and <em>Who has access: Anyone</em>.</li>
+            <li>Copy the Web App URL and paste it into <code>config.js</code> (<code>BACKEND_URL</code>) or above!</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="modal-footer" style="justify-content:flex-end;">
+        <button type="button" class="btn-modal-cancel" id="btn-done-sync-modal">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================================================================== -->
+  <!-- MODAL 3: BACKUP / IMPORT JSON                                          -->
+  <!-- ====================================================================== -->
+  <div class="modal-backdrop" id="backup-modal" role="dialog" aria-modal="true" aria-labelledby="backup-modal-title">
+    <div class="modal-dialog" style="max-width:500px;">
+      <div class="modal-header">
+        <h2 id="backup-modal-title">💾 Backup or Restore Wishlists</h2>
+        <button type="button" class="modal-close-btn" id="btn-close-backup-modal" aria-label="Close">&times;</button>
+      </div>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:14px;">
+        <p style="font-size:0.86rem; line-height:1.5;">
+          Download a JSON copy of all SSG wishlists, or import a JSON file to merge wishlists into the board.
+        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button type="button" class="btn-modal-save" id="btn-download-json">⬇️ Download JSON Backup</button>
+          <label class="photo-upload-label" style="padding:9px 14px;">
+            ⬆️ Import JSON File
+            <input type="file" id="import-json-file" accept=".json,application/json" style="display:none;" />
+          </label>
+        </div>
+        <hr style="border:none; border-top:1px solid var(--cream-400);" />
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-size:0.8rem; color:var(--cream-600);">Want to restore starter sample cards?</span>
+          <button type="button" class="btn-modal-cancel" id="btn-load-samples" style="font-size:0.78rem; padding:6px 12px;">
+            Load Sample Cards
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
