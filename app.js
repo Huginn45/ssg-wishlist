@@ -274,8 +274,8 @@
   }
 
   function updateSyncIndicator(isOnline, message) {
-    syncStatusDot.classList.toggle("online", isOnline);
-    syncStatusText.textContent = message;
+    if (syncStatusDot) syncStatusDot.classList.toggle("online", isOnline);
+    if (syncStatusText) syncStatusText.textContent = message;
   }
 
   async function connectBackend(url, notifyUser = true) {
@@ -1002,10 +1002,13 @@
     });
 
     // Cloud Sync Modal
-    document.getElementById("btn-open-sync").addEventListener("click", () => {
-      backendUrlInput.value = backendUrl;
-      syncModal.classList.add("open");
-    });
+    const openSyncBtn = document.getElementById("btn-open-sync");
+    if (openSyncBtn) {
+      openSyncBtn.addEventListener("click", () => {
+        backendUrlInput.value = backendUrl;
+        syncModal.classList.add("open");
+      });
+    }
     document.getElementById("btn-close-sync-modal").addEventListener("click", () => {
       syncModal.classList.remove("open");
     });
