@@ -69,7 +69,7 @@
         <input
           type="search"
           id="search-input"
-          placeholder="Search by name, codename, gift item, color, or committee..."
+          placeholder="Search by name, gift item, color, or committee..."
           autocomplete="off"
         />
       </div>
@@ -82,7 +82,6 @@
         <select id="sort-select" class="filter-select" aria-label="Sort Wishlists">
           <option value="newest">Newest First</option>
           <option value="name">Name (A–Z)</option>
-          <option value="codename">Codename (A–Z)</option>
         </select>
 
         <span class="stats-summary" id="board-stats-count">0 Wishlists</span>
@@ -124,7 +123,7 @@
         <!-- STEP 1: MEMBER IDENTITY & STAMP -->
         <div class="form-step-panel active" data-step-panel="1">
           <div class="step-intro-text">
-            Start with your name, SSG committee, and an optional Monito-Monita codename.
+            Start with your name and your SSG committee or position.
           </div>
 
           <div class="form-group-card">
@@ -134,21 +133,15 @@
                 <input type="text" id="member-name" required placeholder="e.g., Alyzza Reyes" />
               </div>
               <div class="form-field">
-                <label for="member-codename">Codename <span class="optional">(Optional)</span></label>
-                <input type="text" id="member-codename" placeholder="e.g., Matcha Reindeer" />
+                <label for="member-committee">Committee / Position *</label>
+                <input type="text" id="member-committee" required placeholder="e.g., SSG President, Finance Committee" />
               </div>
             </div>
 
-            <div class="form-grid-2">
-              <div class="form-field">
-                <label for="member-committee">Committee / Position *</label>
-                <select id="member-committee" required></select>
-              </div>
-              <div class="form-field">
-                <label for="member-pin">4-Digit Edit PIN <span class="optional">(Optional)</span></label>
-                <input type="password" id="member-pin" maxlength="12" placeholder="e.g., 1225" />
-                <span class="form-hint">Used when you want to edit or remove your card later.</span>
-              </div>
+            <div class="form-field">
+              <label for="member-pin">4-Digit Edit PIN <span class="optional">(Optional)</span></label>
+              <input type="password" id="member-pin" maxlength="12" placeholder="e.g., 1225" />
+              <span class="form-hint">Locks your card so only you (or an SSG admin) can edit or remove it later.</span>
             </div>
           </div>
 

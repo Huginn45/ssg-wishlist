@@ -198,32 +198,26 @@
   }
 
   function populateCommitteeDropdowns() {
-    const list = Array.isArray(CFG.committees) && CFG.committees.length
-      ? CFG.committees
-      : [
-          "Executive Board",
-          "Secretariat",
-          "Finance & Audit",
-          "Public Information / PR",
-          "Logistics & Events",
-          "Student Welfare & Rights",
-          "Batch / Grade Representatives"
-        ];
+    const currentSelection = committeeFilter.value || "ALL";
+    const dynamicCommittees = cards
+      .map((c) => (c.committee || "").trim())
+      .filter(Boolean);
+    const defaultCommittees = Array.isArray(CFG.committees) ? CFG.committees : [];
+    const merged = Array.from(new Set([...dynamicCommittees, ...defaultCommittees])).sort((a, b) =>
+      a.localeCompare(b)
+    );
 
     committeeFilter.innerHTML = `<option value="ALL">All Committees / Positions</option>`;
-    memberCommitteeSelect.innerHTML = "";
-
-    list.forEach((c) => {
-      const opt1 = document.createElement("option");
-      opt1.value = c;
-      opt1.textContent = c;
-      committeeFilter.appendChild(opt1);
-
-      const opt2 = document.createElement("option");
-      opt2.value = c;
-      opt2.textContent = c;
-      memberCommitteeSelect.appendChild(opt2);
+    merged.forEach((c) => {
+      const opt = document.createElement("option");
+      opt.value = c;
+      opt.textContent = c;
+      committeeFilter.appendChild(opt);
     });
+
+    if (merged.includes(currentSelection)) {
+      committeeFilter.value = currentSelection;
+    }
   }
 
   function renderStampPicker() {
@@ -323,6 +317,7 @@
         cards = [];
       }
       saveLocalCards();
+      populateCommitteeDropdowns();
       renderBoard();
     } else {
       const res = await fetch(backendUrl);
@@ -426,9 +421,6 @@
 
     filtered.sort((a, b) => {
       if (sortVal === "name") return (a.name || "").localeCompare(b.name || "");
-      if (sortVal === "codename") {
-        return (a.codename || a.name || "").localeCompare(b.codename || b.name || "");
-      }
       return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
     });
 
@@ -455,10 +447,7 @@
       cardEl.dataset.id = card.id;
 
       const displayName = escapeHtml(card.name);
-
-      const displaySub = card.codename
-        ? `<div class="member-codename">Codename: ${escapeHtml(card.codename)}</div>`
-        : "";
+      const displaySub = "";
 
       const itemsHtml = (card.items || [])
         .map((item) => {
@@ -607,6 +596,12 @@
         document.getElementById("member-name").focus();
         return false;
       }
+      const committeeVal = document.getElementById("member-committee").value.trim();
+      if (!committeeVal) {
+        showToast("Please enter your Committee or Position.");
+        document.getElementById("member-committee").focus();
+        return false;
+      }
     }
     if (stepNum === 2) {
       const titles = Array.from(wishItemsContainer.querySelectorAll(".item-title-input"))
@@ -741,9 +736,7 @@
       document.getElementById("modal-form-title").textContent = "Edit Your Holiday Wishlist";
       document.getElementById("card-id").value = cardToEdit.id;
       document.getElementById("member-name").value = cardToEdit.name || "";
-      document.getElementById("member-codename").value = cardToEdit.codename || "";
-      document.getElementById("member-committee").value =
-        cardToEdit.committee || memberCommitteeSelect.options[0]?.value || "";
+      document.getElementById("member-committee").value = cardToEdit.committee || "";
       document.getElementById("member-pin").value = cardToEdit.pin || "";
       document.getElementById("pref-color").value = cardToEdit.color || "";
       document.getElementById("pref-size").value = cardToEdit.size || "";
@@ -942,8 +935,7 @@
       const cardObj = {
         id: existingId || "ssg-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
         name: document.getElementById("member-name").value.trim(),
-        codename: document.getElementById("member-codename").value.trim(),
-        committee: document.getElementById("member-committee").value,
+        committee: document.getElementById("member-committee").value.trim(),
         pin: document.getElementById("member-pin").value.trim(),
         stamp: selectedStamp,
         items,
@@ -963,6 +955,7 @@
       }
 
       saveLocalCards();
+      populateCommitteeDropdowns();
       renderBoard();
       closeWishlistModal();
       showToast("Your wishlist card is pinned to the board!");
@@ -1117,6 +1110,7 @@
       }
       cards = Array.from(map.values());
       saveLocalCards();
+      populateCommitteeDropdowns();
       renderBoard();
       backupModal.classList.remove("open");
       showToast("Sample SSG wishlist cards loaded!");
