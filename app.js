@@ -424,14 +424,21 @@
       return new Date(b.updatedAt || 0) - new Date(a.updatedAt || 0);
     });
 
-    statsCountEl.textContent = `${filtered.length} ${filtered.length === 1 ? "Wishlist" : "Wishlists"}`;
+    const isBoardEmpty = cards.length === 0 && !query && committeeVal === "ALL";
+    const cardsToRender = isBoardEmpty
+      ? [{ ...SAMPLE_CARDS[0], isExample: true }]
+      : filtered;
 
-    if (filtered.length === 0) {
+    statsCountEl.textContent = isBoardEmpty
+      ? "0 Wishlists (Showing Example)"
+      : `${filtered.length} ${filtered.length === 1 ? "Wishlist" : "Wishlists"}`;
+
+    if (cardsToRender.length === 0) {
       gridEl.innerHTML = `
         <div class="empty-state">
           <div class="empty-state-icon">🎄</div>
           <h3>No Wishlists Found</h3>
-          <p>Be the first SSG member to pin your holiday wishes and gift clues.</p>
+          <p>Try clearing your search or filter, or pin a new wishlist card.</p>
           <button type="button" class="btn-primary" id="btn-empty-add">📌 Pin My Wishlist</button>
         </div>
       `;
@@ -441,7 +448,7 @@
     }
 
     gridEl.innerHTML = "";
-    filtered.forEach((card) => {
+    cardsToRender.forEach((card) => {
       const cardEl = document.createElement("article");
       cardEl.className = "wish-card";
       cardEl.dataset.id = card.id;
@@ -543,16 +550,24 @@
         ${noteHtml}
 
         <div class="card-footer">
-          <span>Updated ${dateFormatted}</span>
+          <span>${card.isExample ? "Example Guide Card" : `Updated ${dateFormatted}`}</span>
           <div class="card-action-btns">
-            <button type="button" class="card-icon-btn btn-edit-card">Edit</button>
-            <button type="button" class="card-icon-btn btn-delete-card">Remove</button>
+            ${
+              card.isExample
+                ? `<button type="button" class="card-icon-btn btn-pin-example">Pin Yours</button>`
+                : `<button type="button" class="card-icon-btn btn-edit-card">Edit</button>
+                   <button type="button" class="card-icon-btn btn-delete-card">Remove</button>`
+            }
           </div>
         </div>
       `;
 
-      cardEl.querySelector(".btn-edit-card").addEventListener("click", () => handleEditCard(card.id));
-      cardEl.querySelector(".btn-delete-card").addEventListener("click", () => handleDeleteCard(card.id));
+      if (card.isExample) {
+        cardEl.querySelector(".btn-pin-example").addEventListener("click", () => openWishlistModal());
+      } else {
+        cardEl.querySelector(".btn-edit-card").addEventListener("click", () => handleEditCard(card.id));
+        cardEl.querySelector(".btn-delete-card").addEventListener("click", () => handleDeleteCard(card.id));
+      }
 
       gridEl.appendChild(cardEl);
     });
