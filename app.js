@@ -122,7 +122,6 @@
   let cards = [];
   let selectedStamp = STAMPS[0];
   let currentStep = 1;
-  let mysteryMode = false;
   let snowEnabled = true;
   let currentThemeIndex = 0;
   const THEMES = [
@@ -137,8 +136,6 @@
   const searchInput = document.getElementById("search-input");
   const committeeFilter = document.getElementById("committee-filter");
   const sortSelect = document.getElementById("sort-select");
-  const mysteryBtn = document.getElementById("btn-mystery-mode");
-  const mysteryLabel = document.getElementById("mystery-mode-label");
   const statsCountEl = document.getElementById("board-stats-count");
 
   const wishlistModal = document.getElementById("wishlist-modal");
@@ -185,7 +182,7 @@
     if (backendUrl) {
       connectBackend(backendUrl, false);
     } else {
-      updateSyncIndicator(false, "Local Board (Click to Connect Cloud Sync)");
+      updateSyncIndicator(false, "Cloud Sync");
     }
 
     bindEvents();
@@ -284,18 +281,18 @@
   async function connectBackend(url, notifyUser = true) {
     backendUrl = url.trim();
     if (!backendUrl) {
-      updateSyncIndicator(false, "Local Board (Click to Connect Cloud Sync)");
+      updateSyncIndicator(false, "Cloud Sync");
       return;
     }
 
     localStorage.setItem(STORAGE_KEY_BACKEND, backendUrl);
-    updateSyncIndicator(false, "Connecting to shared board...");
+    updateSyncIndicator(false, "Syncing...");
 
     try {
       await fetchFromBackend();
       const label = isFirebaseUrl(backendUrl)
-        ? "Cloud Sync: Connected (Firebase)"
-        : "Cloud Sync: Connected (Google Sheets)";
+        ? "Synced (Firebase)"
+        : "Synced (Sheets)";
       updateSyncIndicator(true, label);
       if (notifyUser) showToast("☁️ Connected to live shared wishlist board!");
 
@@ -305,7 +302,7 @@
       }, 12000);
     } catch (err) {
       console.error("Cloud sync error:", err);
-      updateSyncIndicator(false, "Sync Error (Using Local Cache — Click to Check URL)");
+      updateSyncIndicator(false, "Sync Error");
       if (notifyUser) {
         showToast("⚠️ Could not reach shared URL. Check your Firebase or Apps Script URL.");
       }
@@ -457,15 +454,11 @@
       cardEl.className = "wish-card";
       cardEl.dataset.id = card.id;
 
-      const displayName = mysteryMode
-        ? (card.codename ? escapeHtml(card.codename) : "Mystery SSG Member")
-        : escapeHtml(card.name);
+      const displayName = escapeHtml(card.name);
 
-      const displaySub = mysteryMode
-        ? `<div class="member-codename">Real name hidden (Codename Mode)</div>`
-        : (card.codename
-            ? `<div class="member-codename">Codename: ${escapeHtml(card.codename)}</div>`
-            : "");
+      const displaySub = card.codename
+        ? `<div class="member-codename">Codename: ${escapeHtml(card.codename)}</div>`
+        : "";
 
       const itemsHtml = (card.items || [])
         .map((item) => {
@@ -982,19 +975,6 @@
     committeeFilter.addEventListener("change", renderBoard);
     sortSelect.addEventListener("change", renderBoard);
 
-    // Mystery / Codename Mode
-    mysteryBtn.addEventListener("click", () => {
-      mysteryMode = !mysteryMode;
-      mysteryBtn.classList.toggle("active", mysteryMode);
-      mysteryLabel.textContent = mysteryMode ? "Codename Mode: ON" : "Codename Mode: OFF";
-      renderBoard();
-      showToast(
-        mysteryMode
-          ? "Codename Mode ON: Real names are hidden."
-          : "Codename Mode OFF: Showing real names."
-      );
-    });
-
     // Random Spotlight
     document.getElementById("btn-random-pick").addEventListener("click", () => {
       const cardEls = Array.from(gridEl.querySelectorAll(".wish-card"));
@@ -1047,7 +1027,7 @@
       backendUrlInput.value = "";
       localStorage.removeItem(STORAGE_KEY_BACKEND);
       if (syncIntervalId) clearInterval(syncIntervalId);
-      updateSyncIndicator(false, "Local Board (Click to Connect Cloud Sync)");
+      updateSyncIndicator(false, "Cloud Sync");
       showToast("Disconnected from cloud database.");
     });
 

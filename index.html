@@ -18,18 +18,22 @@
 
   <div class="app-container">
     <!-- Top Utility Bar -->
-    <nav class="top-utility-bar">
-      <button type="button" class="sync-status-pill" id="btn-open-sync" title="Configure live shared database for all SSG phones">
-        <span class="status-dot" id="sync-status-dot"></span>
-        <span id="sync-status-text">Local Board (Click to Connect Cloud Sync)</span>
-      </button>
+    <nav class="top-utility-bar" aria-label="Board tools">
+      <div class="top-brand">
+        <span class="top-brand-mark" aria-hidden="true">🎄</span>
+        <span class="top-brand-text">SSG Wishlist</span>
+      </div>
 
       <div class="utility-actions">
+        <button type="button" class="util-btn" id="btn-open-sync" title="Configure live shared database for all SSG phones">
+          <span class="status-dot" id="sync-status-dot"></span>
+          <span id="sync-status-text">Cloud Sync</span>
+        </button>
         <button type="button" class="util-btn" id="btn-share-board" title="Copy shareable link for SSG group chat">
-          🔗 Share Link
+          🔗 Share
         </button>
         <button type="button" class="util-btn" id="btn-theme-cycle" title="Switch Board Backdrop">
-          🎨 Backdrop: <span id="current-theme-label">Forest Pine</span>
+          🎨 <span id="current-theme-label">Forest Pine</span>
         </button>
         <button type="button" class="util-btn active" id="btn-toggle-snow" title="Toggle Snowfall">
           ❄️ Snow
@@ -82,10 +86,6 @@
           <option value="name">Name (A–Z)</option>
           <option value="codename">Codename (A–Z)</option>
         </select>
-
-        <button type="button" class="mystery-toggle" id="btn-mystery-mode" title="Hide real names and show only Codenames">
-          🎭 <span id="mystery-mode-label">Codename Mode: OFF</span>
-        </button>
 
         <span class="stats-summary" id="board-stats-count">0 Wishlists</span>
       </div>
