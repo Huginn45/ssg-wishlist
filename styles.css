@@ -1160,23 +1160,170 @@ body {
   }
 }
 
-/* Print Friendly */
+/* Print Friendly — Compact Multi-Card Layout for A4, Letter & Legal Bond Paper */
+@page {
+  margin: 8mm;
+}
+
 @media print {
   #snow-canvas,
   .festive-top-trim,
   .top-utility-bar,
   .controls-toolbar,
   .hero-cta-row,
-  .card-action-btns {
+  .hero-subtitle,
+  .org-badge,
+  .card-pin,
+  .card-action-btns,
+  .toast-container {
     display: none !important;
   }
+
   body {
     background: #fff !important;
-    color: #000 !important;
+    background-image: none !important;
+    color: #111 !important;
   }
+
+  .app-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+  }
+
+  .hero-header {
+    padding: 0 0 8px 0 !important;
+    margin-bottom: 6px !important;
+    border-bottom: 1px solid #ccc;
+    text-align: left;
+  }
+
+  .hero-title {
+    font-size: 14pt !important;
+    color: #111 !important;
+    margin: 0 !important;
+  }
+
+  .wishlist-grid {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+    align-items: start;
+  }
+
   .wish-card {
     break-inside: avoid;
-    box-shadow: none;
-    border: 1.5px solid #999;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    background: #fff !important;
+    border: 1px solid #999 !important;
+    border-radius: 6px !important;
+    padding: 8px 9px !important;
+    gap: 6px !important;
+  }
+
+  .wish-card::before {
+    height: 3px !important;
+    border-radius: 5px 5px 0 0 !important;
+  }
+
+  .card-header {
+    padding-top: 2px !important;
+    padding-bottom: 5px !important;
+    gap: 6px !important;
+  }
+
+  .committee-tag {
+    font-size: 6.5pt !important;
+    padding: 1px 5px !important;
+    margin-bottom: 2px !important;
+  }
+
+  .member-name {
+    font-size: 9.5pt !important;
+    line-height: 1.15 !important;
+  }
+
+  .member-codename {
+    font-size: 7.5pt !important;
+    margin-top: 1px !important;
+  }
+
+  .card-stamp {
+    width: 24px !important;
+    height: 24px !important;
+    font-size: 11pt !important;
+    border-radius: 5px !important;
+  }
+
+  .wishes-section-title {
+    font-size: 6.5pt !important;
+    margin-bottom: 3px !important;
+  }
+
+  .wish-items-list {
+    gap: 4px !important;
+  }
+
+  .wish-item {
+    padding: 4px 6px !important;
+    border-radius: 5px !important;
+    gap: 6px !important;
+    background: #fafafa !important;
+  }
+
+  .wish-item-thumb {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 4px !important;
+  }
+
+  .wish-item-title {
+    font-size: 7.8pt !important;
+    line-height: 1.2 !important;
+  }
+
+  .priority-badge {
+    font-size: 6pt !important;
+    padding: 1px 5px !important;
+  }
+
+  .wish-item-notes {
+    font-size: 7pt !important;
+    margin-bottom: 2px !important;
+  }
+
+  .store-link-pill,
+  .price-tag-pill {
+    font-size: 6.5pt !important;
+    padding: 1px 5px !important;
+  }
+
+  .prefs-box {
+    padding: 5px 6px !important;
+    gap: 3px !important;
+    font-size: 7pt !important;
+    border-radius: 5px !important;
+    background: #fafafa !important;
+  }
+
+  .pref-pill {
+    font-size: 6.5pt !important;
+    padding: 1px 5px !important;
+  }
+
+  .pref-dont {
+    font-size: 6.8pt !important;
+    padding: 3px 5px !important;
+  }
+
+  .santa-note {
+    font-size: 7pt !important;
+    padding: 4px 6px !important;
+    line-height: 1.25 !important;
+  }
+
+  .card-footer {
+    padding-top: 4px !important;
+    font-size: 6.5pt !important;
   }
 }
