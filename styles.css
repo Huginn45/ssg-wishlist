@@ -125,8 +125,14 @@ body {
   padding-left: 2px;
 }
 
-.top-brand-mark {
-  font-size: 1.05rem;
+.top-brand-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(244, 239, 226, 0.35);
+  background: #fff;
+  flex-shrink: 0;
 }
 
 .status-dot {
