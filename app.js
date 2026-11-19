@@ -852,6 +852,51 @@
     showToast("Wishlist card removed.");
   }
 
+  async function handleDownloadCardImage(cardEl, card) {
+    if (typeof window.html2canvas !== "function") {
+      showToast("Image exporter is still loading, please try again.");
+      return;
+    }
+
+    const btn = cardEl.querySelector(".btn-download-card");
+    const originalText = btn ? btn.textContent : "Save";
+    if (btn) {
+      btn.textContent = "Saving...";
+      btn.disabled = true;
+    }
+
+    try {
+      const canvas = await window.html2canvas(cardEl, {
+        backgroundColor: null,
+        scale: 3,
+        useCORS: true,
+        y: -16,
+        x: -6,
+        width: cardEl.offsetWidth + 12,
+        height: cardEl.offsetHeight + 22,
+        ignoreElements: (el) => el.classList && el.classList.contains("card-action-btns")
+      });
+
+      const safeName = (card.name || "ssg-wishlist")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-|-$/g, "");
+      const link = document.createElement("a");
+      link.download = `ssg-wishlist-${safeName || "card"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+      showToast("Saved card as PNG sticker!");
+    } catch (err) {
+      console.error("Failed to export card image:", err);
+      showToast("Could not export card image.");
+    } finally {
+      if (btn) {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
+  }
+
   // ==========================================================================
   // THEME & SNOWFALL ANIMATION
   // ==========================================================================
