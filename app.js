@@ -582,6 +582,7 @@
         <div class="card-footer">
           <span>${card.isExample ? "Example Guide Card" : `Updated ${dateFormatted}`}</span>
           <div class="card-action-btns">
+            <button type="button" class="card-icon-btn btn-download-card" title="Download card as PNG sticker">Save</button>
             ${
               card.isExample
                 ? `<button type="button" class="card-icon-btn btn-pin-example">Pin Yours</button>`
@@ -592,6 +593,7 @@
         </div>
       `;
 
+      cardEl.querySelector(".btn-download-card").addEventListener("click", () => handleDownloadCardImage(cardEl, card));
       if (card.isExample) {
         cardEl.querySelector(".btn-pin-example").addEventListener("click", () => openWishlistModal());
       } else {
