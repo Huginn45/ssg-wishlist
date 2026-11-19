@@ -199,28 +199,53 @@
 
   function populateCommitteeDropdowns() {
     const currentSelection = committeeFilter.value || "ALL";
-    const dynamicCommittees = cards
-      .map((c) => (c.committee || "").trim())
-      .filter(Boolean);
-    const defaultCommittees = Array.isArray(CFG.committees) ? CFG.committees : [];
-    const merged = Array.from(new Set([...defaultCommittees, ...dynamicCommittees]));
+    const rawCommittees = CFG.committees;
+    const isGrouped = rawCommittees && !Array.isArray(rawCommittees) && typeof rawCommittees === "object";
 
+    const knownPositions = new Set();
     committeeFilter.innerHTML = `<option value="ALL">All Committees / Positions</option>`;
     memberCommitteeSelect.innerHTML = `<option value="" disabled selected>Select your position...</option>`;
 
-    merged.forEach((c) => {
+    function appendOptionToBoth(label, targetFilter, targetMember) {
+      knownPositions.add(label);
       const opt1 = document.createElement("option");
-      opt1.value = c;
-      opt1.textContent = c;
-      committeeFilter.appendChild(opt1);
+      opt1.value = label;
+      opt1.textContent = label;
+      targetFilter.appendChild(opt1);
 
       const opt2 = document.createElement("option");
-      opt2.value = c;
-      opt2.textContent = c;
-      memberCommitteeSelect.appendChild(opt2);
-    });
+      opt2.value = label;
+      opt2.textContent = label;
+      targetMember.appendChild(opt2);
+    }
 
-    if (merged.includes(currentSelection)) {
+    if (isGrouped) {
+      Object.entries(rawCommittees).forEach(([groupName, items]) => {
+        if (!Array.isArray(items) || !items.length) return;
+        const g1 = document.createElement("optgroup");
+        g1.label = groupName;
+        const g2 = document.createElement("optgroup");
+        g2.label = groupName;
+
+        items.forEach((pos) => appendOptionToBoth(pos, g1, g2));
+        committeeFilter.appendChild(g1);
+        memberCommitteeSelect.appendChild(g2);
+      });
+    } else if (Array.isArray(rawCommittees)) {
+      rawCommittees.forEach((pos) => appendOptionToBoth(pos, committeeFilter, memberCommitteeSelect));
+    }
+
+    // Include any custom/legacy positions already saved on cards
+    const extraPositions = cards
+      .map((c) => (c.committee || "").trim())
+      .filter((pos) => pos && !knownPositions.has(pos));
+    if (extraPositions.length) {
+      Array.from(new Set(extraPositions)).forEach((pos) => {
+        appendOptionToBoth(pos, committeeFilter, memberCommitteeSelect);
+      });
+    }
+
+    if (knownPositions.has(currentSelection)) {
       committeeFilter.value = currentSelection;
     }
   }

@@ -23,49 +23,61 @@ window.SSG_CONFIG = {
   // Admin Passcode (allows editing/deleting any card if someone forgets their PIN)
   ADMIN_PIN: "SSG2026",
 
-  // SSG Committees / Positions
-  committees: [
-    "President",
-    "Vice President",
-    "Senator - COED",
-    "Senator - CAS",
-    "Senator - COTE",
-    "Senator - CHMT",
-    "Senator - CAFE",
-    "BSED-MATH House Representative",
-    "BSED-ENGLISH HOUSE REPRESENTATIVE",
-    "BEED - House Representative",
-    "BTLED HOUSE REPRESENTATIVE",
-    "BSA-House Representative",
-    "BSF House Representative",
-    "BSES House Representative",
-    "BSP- House Representative",
-    "BAEL- House Representative",
-    "BALit - House Representative",
-    "BSIE- House Representative",
-    "BSIT House Representative",
-    "BIT-Automotive House Representative",
-    "BIT- Comptech House Representative",
-    "BIT - Electronics House Representative",
-    "BIT - Garments House Representative",
-    "BIT- Drafting House Representative",
-    "BSHM- House Representative",
-    "BSTM- House Representative",
-    "Executive Secretary",
-    "Deputy Executive Secretary",
-    "Press Secretary",
-    "Deputy Press Secretary",
-    "Executive Secretary on Finance",
-    "Deputy Secretary on Finance",
-    "Secretary on Audit",
-    "Mass Media Director",
-    "Graphics Officer",
-    "Documentation Officer",
-    "Creative Media Officer",
-    "Technical Committee",
-    "Events and Planning Committee",
-    "Design Officer",
-    "Logistics Committee",
-    "Linkages Committee"
-  ]
+  // SSG Committees / Positions (Grouped cleanly for dropdowns)
+  committees: {
+    "Executive Officers": [
+      "President",
+      "Vice President"
+    ],
+    "Senators": [
+      "Senator - COED",
+      "Senator - CAS",
+      "Senator - COTE",
+      "Senator - CHMT",
+      "Senator - CAFE"
+    ],
+    "House Representatives": [
+      "BSED-Math House Representative",
+      "BSED-English House Representative",
+      "BEED House Representative",
+      "BTLED House Representative",
+      "BSA House Representative",
+      "BSF House Representative",
+      "BSES House Representative",
+      "BSP House Representative",
+      "BAEL House Representative",
+      "BALit House Representative",
+      "BSIE House Representative",
+      "BSIT House Representative",
+      "BIT-Automotive House Representative",
+      "BIT-Comptech House Representative",
+      "BIT-Electronics House Representative",
+      "BIT-Garments House Representative",
+      "BIT-Drafting House Representative",
+      "BSHM House Representative",
+      "BSTM House Representative"
+    ],
+    "Secretariat & Finance": [
+      "Executive Secretary",
+      "Deputy Executive Secretary",
+      "Press Secretary",
+      "Deputy Press Secretary",
+      "Executive Secretary on Finance",
+      "Deputy Secretary on Finance",
+      "Secretary on Audit"
+    ],
+    "Media & Creative": [
+      "Multi Media Director",
+      "Graphics Officer",
+      "Documentation Officer",
+      "Creative Media Officer",
+      "Design Officer"
+    ],
+    "Committees": [
+      "Technical Committee",
+      "Events and Planning Committee",
+      "Logistics Committee",
+      "Linkages Committee"
+    ]
+  }
 };
