@@ -203,16 +203,21 @@
       .map((c) => (c.committee || "").trim())
       .filter(Boolean);
     const defaultCommittees = Array.isArray(CFG.committees) ? CFG.committees : [];
-    const merged = Array.from(new Set([...dynamicCommittees, ...defaultCommittees])).sort((a, b) =>
-      a.localeCompare(b)
-    );
+    const merged = Array.from(new Set([...defaultCommittees, ...dynamicCommittees]));
 
     committeeFilter.innerHTML = `<option value="ALL">All Committees / Positions</option>`;
+    memberCommitteeSelect.innerHTML = `<option value="" disabled selected>Select your position...</option>`;
+
     merged.forEach((c) => {
-      const opt = document.createElement("option");
-      opt.value = c;
-      opt.textContent = c;
-      committeeFilter.appendChild(opt);
+      const opt1 = document.createElement("option");
+      opt1.value = c;
+      opt1.textContent = c;
+      committeeFilter.appendChild(opt1);
+
+      const opt2 = document.createElement("option");
+      opt2.value = c;
+      opt2.textContent = c;
+      memberCommitteeSelect.appendChild(opt2);
     });
 
     if (merged.includes(currentSelection)) {
@@ -613,7 +618,7 @@
       }
       const committeeVal = document.getElementById("member-committee").value.trim();
       if (!committeeVal) {
-        showToast("Please enter your Committee or Position.");
+        showToast("Please select your Committee or Position.");
         document.getElementById("member-committee").focus();
         return false;
       }
