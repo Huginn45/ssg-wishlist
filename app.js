@@ -130,6 +130,8 @@
   ];
   let backendUrl = "";
   let syncIntervalId = null;
+  let isSyncingWrite = false;
+  let lastWriteAt = 0;
 
   // DOM Elements
   const gridEl = document.getElementById("wishlist-grid");
@@ -333,29 +335,49 @@
     }
   }
 
-  async function fetchFromBackend() {
+  function mergeRemoteCards(remoteCards) {
+    const localMap = new Map(cards.map((c) => [c.id, c]));
+    const now = Date.now();
+    return remoteCards.map((rc) => {
+      const lc = localMap.get(rc.id);
+      if (lc && lc.updatedAt && rc.updatedAt) {
+        const localTime = new Date(lc.updatedAt).getTime();
+        const remoteTime = new Date(rc.updatedAt).getTime();
+        if (localTime > remoteTime && now - localTime < 60000) {
+          return lc;
+        }
+      }
+      return rc;
+    });
+  }
+
+  async function fetchFromBackend(isBackgroundPoll = false) {
     if (!backendUrl) return;
+    if (isBackgroundPoll && (isSyncingWrite || Date.now() - lastWriteAt < 8000)) {
+      return;
+    }
 
     if (isFirebaseUrl(backendUrl)) {
-      const endpoint = `${normalizeFirebaseBase(backendUrl)}/wishlists.json`;
-      const res = await fetch(endpoint);
+      const endpoint = `${normalizeFirebaseBase(backendUrl)}/wishlists.json?_t=${Date.now()}`;
+      const res = await fetch(endpoint, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      if (data && typeof data === "object") {
-        cards = Object.values(data).filter((c) => c && c.id);
-      } else {
-        cards = [];
-      }
+      const remoteCards = data && typeof data === "object"
+        ? Object.values(data).filter((c) => c && c.id)
+        : [];
+      cards = mergeRemoteCards(remoteCards);
       saveLocalCards();
       populateCommitteeDropdowns();
       renderBoard();
     } else {
-      const res = await fetch(backendUrl);
+      const sep = backendUrl.includes("?") ? "&" : "?";
+      const res = await fetch(`${backendUrl}${sep}_t=${Date.now()}`, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (data && Array.isArray(data.cards)) {
-        cards = data.cards;
+        cards = mergeRemoteCards(data.cards);
         saveLocalCards();
+        populateCommitteeDropdowns();
         renderBoard();
       }
     }
@@ -363,6 +385,8 @@
 
   async function pushCardToBackend(card) {
     if (!backendUrl) return;
+    isSyncingWrite = true;
+    lastWriteAt = Date.now();
 
     try {
       if (isFirebaseUrl(backendUrl)) {
@@ -374,20 +398,30 @@
         });
         if (!res.ok) throw new Error(`Firebase PUT failed: ${res.status}`);
       } else {
-        await fetch(backendUrl, {
+        const res = await fetch(backendUrl, {
           method: "POST",
           headers: { "Content-Type": "text/plain;charset=utf-8" },
           body: JSON.stringify({ action: "upsert", card })
         });
+        if (!res.ok) throw new Error(`Sheets POST failed: ${res.status}`);
+        const resData = await res.json();
+        if (resData && resData.status === "error") {
+          throw new Error(resData.message || "Google Sheets rejected the update");
+        }
       }
     } catch (err) {
       console.error("Failed to push card to cloud:", err);
-      showToast("⚠️ Saved locally, but cloud sync failed.");
+      showToast("⚠️ Cloud sync failed (if you uploaded large photos, try fewer/smaller photos).");
+    } finally {
+      isSyncingWrite = false;
+      lastWriteAt = Date.now();
     }
   }
 
   async function deleteCardFromBackend(cardId) {
     if (!backendUrl) return;
+    isSyncingWrite = true;
+    lastWriteAt = Date.now();
 
     try {
       if (isFirebaseUrl(backendUrl)) {
@@ -402,6 +436,9 @@
       }
     } catch (err) {
       console.error("Failed to delete card from cloud:", err);
+    } finally {
+      isSyncingWrite = false;
+      lastWriteAt = Date.now();
     }
   }
 
@@ -753,7 +790,7 @@
     reader.onload = (ev) => {
       const img = new Image();
       img.onload = () => {
-        const MAX_DIM = 240;
+        const MAX_DIM = 180;
         let w = img.width;
         let h = img.height;
         if (w > h && w > MAX_DIM) {
@@ -768,7 +805,7 @@
         canvas.height = h;
         const ctx = canvas.getContext("2d");
         ctx.drawImage(img, 0, 0, w, h);
-        callback(canvas.toDataURL("image/jpeg", 0.78));
+        callback(canvas.toDataURL("image/jpeg", 0.7));
       };
       img.src = ev.target.result;
     };
