@@ -18,7 +18,7 @@ window.SSG_CONFIG = {
   // Option B (Google Sheets): Paste a deployed Google Apps Script Web App URL
   //   e.g. "https://script.google.com/macros/s/AKfycb.../exec"
   // Leave empty ("") to configure via the in-app "Cloud Sync" button or use local storage.
-  BACKEND_URL: "https://script.google.com/macros/s/AKfycbxGE87pdCr1tsbRFrtGhm29H8tLW2NLH4F3Oc09unJ6M63ElgSC1SdPB77ntHuOj92q/exec",
+  BACKEND_URL: "https://ssg-wishlist-default-rtdb.asia-southeast1.firebasedatabase.app",
 
   // Admin Passcode (allows editing/deleting any card if someone forgets their PIN)
   ADMIN_PIN: "SSG2026",
