@@ -249,6 +249,8 @@
 
     if (knownPositions.has(currentSelection)) {
       committeeFilter.value = currentSelection;
+    } else {
+      committeeFilter.value = "ALL";
     }
   }
 
@@ -785,6 +787,48 @@
     });
   }
 
+  function shrinkDataUrl(dataUrl, maxDim = 120, quality = 0.55) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (w > h && w > maxDim) {
+          h = Math.round((h * maxDim) / w);
+          w = maxDim;
+        } else if (h >= w && h > maxDim) {
+          w = Math.round((w * maxDim) / h);
+          h = maxDim;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = () => resolve(dataUrl);
+      img.src = dataUrl;
+    });
+  }
+
+  async function ensureCardFitsSheetLimit(cardObj) {
+    if (JSON.stringify(cardObj).length <= 45000) return cardObj;
+    for (const item of cardObj.items || []) {
+      if (item.photo && item.photo.startsWith("data:image/")) {
+        item.photo = await shrinkDataUrl(item.photo, 120, 0.55);
+      }
+    }
+    if (JSON.stringify(cardObj).length > 48000) {
+      for (const item of cardObj.items || []) {
+        if (item.photo && item.photo.startsWith("data:image/")) {
+          item.photo = await shrinkDataUrl(item.photo, 90, 0.45);
+        }
+      }
+    }
+    return cardObj;
+  }
+
   function compressImageFile(file, callback) {
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -820,7 +864,17 @@
       document.getElementById("modal-form-title").textContent = "Edit Your Holiday Wishlist";
       document.getElementById("card-id").value = cardToEdit.id;
       document.getElementById("member-name").value = cardToEdit.name || "";
-      document.getElementById("member-committee").value = cardToEdit.committee || "";
+      const committeeVal = (cardToEdit.committee || "").trim();
+      if (
+        committeeVal &&
+        !Array.from(memberCommitteeSelect.options).some((opt) => opt.value === committeeVal)
+      ) {
+        const extraOpt = document.createElement("option");
+        extraOpt.value = committeeVal;
+        extraOpt.textContent = committeeVal;
+        memberCommitteeSelect.appendChild(extraOpt);
+      }
+      memberCommitteeSelect.value = committeeVal;
       document.getElementById("member-pin").value = cardToEdit.pin || "";
       document.getElementById("pref-color").value = cardToEdit.color || "";
       document.getElementById("pref-size").value = cardToEdit.size || "";
@@ -1075,6 +1129,8 @@
         santaNote: document.getElementById("santa-note").value.trim(),
         updatedAt: new Date().toISOString()
       };
+
+      await ensureCardFitsSheetLimit(cardObj);
 
       const existingIdx = cards.findIndex((c) => c.id === cardObj.id);
       if (existingIdx >= 0) {
