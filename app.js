@@ -201,6 +201,7 @@
 
   function populateCommitteeDropdowns() {
     const currentSelection = committeeFilter.value || "ALL";
+    const prevMemberSelection = memberCommitteeSelect.value || "";
     const rawCommittees = CFG.committees;
     const isGrouped = rawCommittees && !Array.isArray(rawCommittees) && typeof rawCommittees === "object";
 
@@ -251,6 +252,16 @@
       committeeFilter.value = currentSelection;
     } else {
       committeeFilter.value = "ALL";
+    }
+
+    if (prevMemberSelection) {
+      if (!Array.from(memberCommitteeSelect.options).some((o) => o.value === prevMemberSelection)) {
+        const extraOpt = document.createElement("option");
+        extraOpt.value = prevMemberSelection;
+        extraOpt.textContent = prevMemberSelection;
+        memberCommitteeSelect.appendChild(extraOpt);
+      }
+      memberCommitteeSelect.value = prevMemberSelection;
     }
   }
 
@@ -355,7 +366,10 @@
 
   async function fetchFromBackend(isBackgroundPoll = false) {
     if (!backendUrl) return;
-    if (isBackgroundPoll && (isSyncingWrite || Date.now() - lastWriteAt < 8000)) {
+    if (
+      isBackgroundPoll &&
+      (isSyncingWrite || Date.now() - lastWriteAt < 8000 || wishlistModal.classList.contains("open"))
+    ) {
       return;
     }
 
